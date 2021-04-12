@@ -34,14 +34,22 @@
         <small>Filter Opties</small>
         <div class="divider"></div>
         <div id="layercontrol">
-            <input type="radio" id="opleiding" name="map" value="opleiding">
-            <label for="opleiding">opleidingsniveau</label><br>
-            <input type="radio" id="woz" name="map" value="woz">
-            <label for="opleiding">Gemiddelde WOZ waarde (x1000 euro)</label><br>
-            <input type="radio" id="plus" name="map" value="plus">
-            <label for="opleiding">Aantal 65-plussers</label><br>
-            <input type="radio" id="huur" name="map" value="huur">
-            <label for="opleiding">Aantal sociale huurwoningen</label><br>
+            <label class="option" for="opleiding">Opleidingsniveau
+                <input type="radio" id="opleiding" name="map" value="opleiding">
+                <span class="checkmark"></span>
+            </label>
+            <label class="option" for="woz">Gemiddelde WOZ waarde (x1000 euro)
+                <input type="radio" id="woz" name="map" value="woz">
+                <span class="checkmark"></span>
+            </label>
+            <label class="option" for="plus">Aantal 65-plussers
+                <input type="radio" id="plus" name="map" value="plus">
+                <span class="checkmark"></span>
+            </label>
+            <label class="option" for="huur">Aantal sociale huurwoningen
+                <input type="radio" id="huur" name="map" value="huur">
+                <span class="checkmark"></span>
+            </label>
         </div>
     </div>
     <main>
@@ -144,6 +152,7 @@
             const html = createHTML(properties);
             let party = largestParty(properties);
             if (party === "vvd") {
+                console.log("name: " +  properties.Stembureau + " latitude: " + properties.Latitude + " Longitude: " + properties.Longitude);
                 layer.setIcon(vvdIcon);
             } else if(party === "pvv") {
                 layer.setIcon(pvvIcon);
