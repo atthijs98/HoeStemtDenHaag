@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="stylesheet.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.3.0/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.3.0/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.3.0/dist/leaflet.markercluster.js"></script>
+    <script src="data/stembureaus.js"></script>
+    <script src="data/woz.js"></script>
+    <script src="data/opleidingsniveau.js"></script>
+    <script src="data/65plus.js"></script>
+    <script src="data/huurwoning.js"></script>
+    <title>Hoe Stemt Den Haag?</title>
+</head>
+<body>
+<header>
+    <nav>
+        <h2>Hoe stemt Den Haag?</h2>
+    </nav>
+</header>
+    <div class="sidenav">
+        <a>
+            <figure>
+                <img src="images/downloaden.png" alt="logo">
+            </figure>
+        </a>
+        <h4>Hoe stemt Den Haag?</h4>
+        <small>Filter Opties</small>
+        <div class="divider"></div>
+        <div id="layercontrol">
+            <input type="radio" id="opleiding" name="map" value="opleiding">
+            <label for="opleiding">opleidingsniveau</label><br>
+            <input type="radio" id="woz" name="map" value="woz">
+            <label for="opleiding">Gemiddelde WOZ waarde (x1000 euro)</label><br>
+            <input type="radio" id="plus" name="map" value="plus">
+            <label for="opleiding">Aantal 65-plussers</label><br>
+            <input type="radio" id="huur" name="map" value="huur">
+            <label for="opleiding">Aantal sociale huurwoningen</label><br>
+        </div>
+    </div>
+    <main>
+        <div id="map"></div>
+    </main>
+<script>
+    const LeafletIcon = L.Icon.extend({
+        options: {
+            iconAnchor: [22, 94],
+            popupAnchor: [-3, -76]
+        }
+    });
+
+    let vvdIcon = new LeafletIcon({iconUrl: 'images/vvd_logo.png', iconSize: [28,28]}),
+        pvdaIcon = new LeafletIcon({iconUrl: 'images/pvda_logo.png', iconSize: [35,35]}),
+        pvvIcon = new LeafletIcon({iconUrl: 'images/pvv_logo.png', iconSize: [35,35]}),
+        denkIcon = new LeafletIcon({iconUrl: 'images/denk_logo.png',iconSize: [50,50]}),
+        d66Icon = new LeafletIcon({iconUrl: 'images/d66_logo.png', iconSize: [35,30]}),
+        groenlinksIcon = new LeafletIcon({iconUrl: 'images/groenlinks_logo.png', iconSize: [50,25]});
+
+
+    let currentLayer;
+
+    const huur = L.geoJson(Huur, {
+        style: style,
+        onEachFeature: function (feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: zoomToFeature
+            });
+        }
+    })
+    const oud = L.geoJson(Oud, {
+        style: style,
+        onEachFeature: function (feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: zoomToFeature
+            });
+        }
+    })
+    const woz = L.geoJson(Woz, {
+        style: style,
+        onEachFeature: function (feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: zoomToFeature
+            });
+        }
+    });
+    const opleidingsniveau = L.geoJson(Opleiding, {
+        style: style,
+        onEachFeature: function (feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: zoomToFeature
+            });
+        }
+    });
+
+    let info = L.control();
+    info.onAdd = function (map) {
+        this._div = L.DomUtil.create('div', 'info');
+        this.update();
+        return this._div
+    };
+    info.update = function (props) {
+        if (typeof props === 'undefined') {
+            this._div.innerHTML = '<h4>Title</h4>' +  (props ?
+                '<b>Wijknaam</b><br /> waarde'
+                : 'Hover over een wijk');
+        }else if (props.hasOwnProperty("hoog")){
+            this._div.innerHTML = '<h4>Percentage hoog opleidingsniveau</h4>' +  (props ?
+                '<b>' + props.WIJKNAAM + '</b><br />' + props.hoog + ' %'
+                : 'Hover over een wijk');
+        } else if(props.hasOwnProperty("P_SOCIAAL")) {
+            this._div.innerHTML = '<h4>Percentage sociale huurwoningen</h4>' +  (props ?
+                '<b>' + props.WIJKNAAM + '</b><br />' + props.P_SOCIAAL + ' %'
+                : 'Hover over een wijk');
+        } else if (props.hasOwnProperty("A_65_PLUS")) {
+            this._div.innerHTML = '<h4>Aantal 65 plussers</h4>' +  (props ?
+                '<b>' + props.WIJKNAAM + '</b><br />' + props.A_65_PLUS + ''
+                : 'Hover over een wijk');
+        } else if (props.hasOwnProperty("G_WOZ")) {
+            this._div.innerHTML = '<h4>Gemiddelde WOZ-waarde (x 1000)</h4>' +  (props ?
+                '<b>' + props.WIJKNAAM + '</b><br />' + props.G_WOZ + ''
+                : 'Hover over een wijk');
+        }
+    }
+
+
+    const markers = L.markerClusterGroup();
+    const pollingStations = L.geoJson(Bureaus, {
+        onEachFeature: function (feature, layer) {
+            let properties = feature.properties;
+            const html = createHTML(properties);
+            let party = largestParty(properties);
+            if (party === "vvd") {
+                layer.setIcon(vvdIcon);
+            } else if(party === "pvv") {
+                layer.setIcon(pvvIcon);
+            } else if(party === "pvda") {
+                layer.setIcon(pvdaIcon);
+            } else if(party === "d66") {
+                layer.setIcon(d66Icon);
+            } else if(party === "groenlinks") {
+                layer.setIcon(groenlinksIcon);
+            } else if(party === "denk") {
+                layer.setIcon(denkIcon);
+            }
+            layer.bindPopup(html);
+        }
+    });
+    markers.addLayer(pollingStations);
+
+    const legend = L.control({position: 'bottomright'})
+    legend.onAdd = function (map) {
+        console.log(map);
+        this._el = L.DomUtil.create('div', 'info legend');
+        this.updateLegend();
+        return this._el;
+    };
+
+    legend.updateLegend = function (name) {
+        this._el.innerHTML = '';
+        if (typeof currentLayer === "undefined") {
+            let grades = [7, 15, 25, 30, 40, 48, 55, 63, 71],
+                labels = [];
+
+            for (let i = 0; i < grades.length-1; i++) {
+                let d = {"hoog": grades[i] + 1};
+                this._el.innerHTML +=
+                    '<i style="background:' + getColor(d) + '"></i> ' +
+                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+            }
+        } else {
+            if (name === "opleidingsniveau") {
+                let grades = [7, 15, 25, 30, 40, 48, 55, 63, 71],
+                    labels = [];
+
+                for (let i = 0; i < grades.length-1; i++) {
+                    let d = {"hoog": grades[i] + 1};
+                    this._el.innerHTML +=
+                        '<i style="background:' + getColor(d) + '"></i> ' +
+                        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+                }
+            } else if (name === "Aantal sociale huurwoningen") {
+                let grades = [0, 6, 21, 44, 68, 100],
+                    labels = [];
+
+                for (let i = 0; i < grades.length-1; i++) {
+                    let d = {"P_SOCIAAL": grades[i] + 1};
+                    this._el.innerHTML +=
+                        '<i style="background:' + getColor(d) + '"></i> ' +
+                        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+                }
+            } else if (name === "Aantal 65 plusser") {
+                let grades = [0, 1000, 2000, 3000, 4000, 5000, 6000],
+                    labels = [];
+
+                for (let i = 0; i < grades.length-1; i++) {
+                    let d = {"A_65_PLUS": grades[i] + 1};
+                    this._el.innerHTML +=
+                        '<i style="background:' + getColor(d) + '"></i> ' +
+                        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+                }
+            } else if (name === "Gemiddelde WOZ waarde (x1000 euro)") {
+                let grades = [77, 100, 200, 300, 400, 500, 600, 700],
+                    labels = [];
+
+                for (let i = 0; i < grades.length-1; i++) {
+                    let d = {"G_WOZ": grades[i] + 1};
+                    this._el.innerHTML +=
+                        '<i style="background:' + getColor(d) + '"></i> ' +
+                        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+                }
+            }
+        }
+    }
+
+    const dutchMap =  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    })
+
+    const map = L.map('map', {
+        center: [52.081057821773804, 4.324206744627572],
+        zoom: 12,
+        layers: [dutchMap]
+    });
+
+    const baseMaps = {
+        "Nederland": dutchMap
+    };
+
+    const overlayMaps = {
+        "opleidingsniveau": opleidingsniveau,
+        "Gemiddelde WOZ waarde (x1000 euro)": woz,
+        "Aantal 65 plusser": oud,
+        "Aantal sociale huurwoningen": huur
+    }
+
+    function largestParty(feature) {
+        let arr = [
+            ["VVD", feature["VVD"]],
+            ["PVDA", feature["P.v.d.A."]],
+            ["PVV", feature["PVV"]],
+            ["D66", feature["D66"]],
+            ["GROENLINKS", feature["GROENLINKS"]],
+            ["DENK", feature["DENK"]],
+            ];
+        arr.sort(sortFunction);
+        if (arr[0][0] === "VVD") {
+            return "vvd";
+        } else if(arr[0][0] === "PVV") {
+            return "pvv";
+        } else if(arr[0][0] === "PVDA") {
+            return "pvda";
+        } else if(arr[0][0] === "D66") {
+            return "d66";
+        } else if(arr[0][0] === "GROENLINKS") {
+            return "groenlinks";
+        } else if(arr[0][0] === "DENK") {
+            return "denk";
+        }
+    }
+
+    function getColor(d) {
+        if (typeof currentLayer === 'undefined') {
+            if (d.hasOwnProperty("hoog")) {
+                let v = parseInt(d.hoog);
+                if (v > 5 && v < 15.325) {
+                    return '#f7fbff';
+                } else if (v > 15.325 && v < 23.250) {
+                    return '#dceaf7';
+                } else if (v > 23.250 && v < 31.175) {
+                    return '#bed8ed';
+                } else if (v > 31.175 && v < 39.100) {
+                    return '#8fc2de';
+                } else if (v > 39.100 && v < 47.025) {
+                    return '#5ba3d0';
+                } else if (v > 47.025 && v < 54.950) {
+                    return '#3182be';
+                } else if (v > 54.950 && v < 62.82) {
+                    return '#105ca5';
+                } else if (v > 62.822 && v < 71) {
+                    return '#08256b';
+                } else {
+                    return 'transparent';
+                }
+            } else if(d.hasOwnProperty("G_WOZ")) {
+                let v = parseInt(d.G_WOZ);
+                if (v > 75 && v < 100) {
+                    return '#fff5f0';
+                } else if (v > 100 && v < 200) {
+                    return '#fed6c4';
+                } else if (v > 200 && v < 300) {
+                    return '#fca487';
+                } else if (v >= 300 && v < 400) {
+                    return '#fc7050';
+                } else if (v > 400 && v < 500) {
+                    return '#eb362a';
+                } else if (v > 500 && v < 600) {
+                    return '#ba1419';
+                } else if (v > 600 && v < 700) {
+                    return '#67000d';
+                } else {
+                    return 'transparent';
+                }
+
+            } else if(d.hasOwnProperty("P_SOCIAAL")) {
+                let v = parseInt(d.P_SOCIAAL);
+                if (v >= 0 && v < 6) {
+                    return '#fafafa';
+                } else if (v >= 6 && v < 21) {
+                    return '#bdbdbd';
+                } else if (v >= 21 && v < 44) {
+                    return '#808080';
+                } else if (v >= 44 && v < 68) {
+                    return '#424242';
+                } else if (v >= 68 && v < 100) {
+                    return '#050505';
+                } else {
+                    return 'transparent';
+                }
+
+            } else if(d.hasOwnProperty("A_65_PLUS")) {
+                let v = parseInt(d.A_65_PLUS);
+                if (v > 0 && v < 1000) {
+                    return '#edf8fb';
+                } else if (v > 1000 && v < 2000) {
+                    return '#bfd6e8';
+                } else if (v > 2000 && v < 3000) {
+                    return '#9cacd2';
+                } else if (v > 3000 && v < 4000) {
+                    return '#8a7cba';
+                } else if (v > 4000 && v < 5000) {
+                    return '#87489f';
+                } else if (v > 5000 && v < 6000) {
+                    return '#810f7c';
+                } else {
+                    return 'transparent';
+                }
+            }
+        } else {
+            if (currentLayer === "opleidingsniveau") {
+                let v = parseInt(d.hoog);
+                if (v > 5 && v < 15.325) {
+                    return '#f7fbff';
+                } else if (v > 15.325 && v < 23.250) {
+                    return '#dceaf7';
+                } else if (v > 23.250 && v < 31.175) {
+                    return '#bed8ed';
+                } else if (v > 31.175 && v < 39.100) {
+                    return '#8fc2de';
+                } else if (v > 39.100 && v < 47.025) {
+                    return '#5ba3d0';
+                } else if (v > 47.025 && v < 54.950) {
+                    return '#3182be';
+                } else if (v > 54.950 && v < 62.82) {
+                    return '#105ca5';
+                } else if (v > 62.822 && v < 71) {
+                    return '#08256b';
+                } else {
+                    return 'transparent';
+                }
+            } else if (currentLayer === "Aantal sociale huurwoningen") {
+                let v = parseInt(d.P_SOCIAAL);
+                if (v >= 0 && v < 6) {
+                    return '#fafafa';
+                } else if (v >= 6 && v < 21) {
+                    return '#bdbdbd';
+                } else if (v >= 21 && v < 44) {
+                    return '#808080';
+                } else if (v >= 44 && v < 68) {
+                    return '#424242';
+                } else if (v >= 68 && v < 100) {
+                    return '#050505';
+                } else {
+                    return 'transparent';
+                }
+            } else if (currentLayer === "Aantal 65 plusser") {
+                let v = parseInt(d.A_65_PLUS);
+                if (v > 0 && v < 1000) {
+                    return '#edf8fb';
+                } else if (v > 1000 && v < 2000) {
+                    return '#bfd6e8';
+                } else if (v > 2000 && v < 3000) {
+                    return '#9cacd2';
+                } else if (v > 3000 && v < 4000) {
+                    return '#8a7cba';
+                } else if (v > 4000 && v < 5000) {
+                    return '#87489f';
+                } else if (v > 5000 && v < 6000) {
+                    return '#810f7c';
+                } else {
+                    return 'transparent';
+                }
+            } else if (currentLayer === "Gemiddelde WOZ waarde (x1000 euro)") {
+                let v = parseInt(d.G_WOZ);
+                if (v > 75 && v < 100) {
+                    return '#fff5f0';
+                } else if (v > 100 && v < 200) {
+                    return '#fed6c4';
+                } else if (v > 200 && v < 300) {
+                    return '#fca487';
+                } else if (v >= 300 && v < 400) {
+                    return '#fc7050';
+                } else if (v > 400 && v < 500) {
+                    return '#eb362a';
+                } else if (v > 500 && v < 600) {
+                    return '#ba1419';
+                } else if (v > 600 && v < 700) {
+                    return '#67000d';
+                } else {
+                    return 'transparent';
+                }
+
+            }
+        }
+
+    }
+
+
+    function style(feature) {
+        return {
+            fillColor: getColor(feature.properties),
+            weight: 1,
+            opacity: 1,
+            color: 'black',
+            fillOpacity: 0.7
+        };
+    }
+
+    function highlightFeature(e) {
+        let layer = e.target;
+
+        layer.setStyle({
+            weight: 5,
+            color: '#666',
+            dashArray: '',
+            fillOpacity: 0.7
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            layer.bringToFront();
+        }
+        info.update(layer.feature.properties);
+    }
+
+    function resetHighlight(e) {
+        opleidingsniveau.resetStyle(e.target);
+        info.update();
+    }
+
+    function zoomToFeature(e) {
+        map.fitBounds(e.target.getBounds());
+    }
+
+    function sortFunction(a, b) {
+        if(a[1] === b[1]) {
+            return 0;
+        } else {
+            return (parseInt(b[1]) < parseInt(a[1])) ? -1 : 1;
+        }
+    }
+
+    function createHTML(b) {
+        let arr = [
+            ["VVD", b["VVD"]],
+            ["PVDA", b["P.v.d.A."]],
+            ["PVV", b["PVV"]],
+            ["SP", b["SP"]],
+            ["CDA", b["CDA"]],
+            ["D66", b["D66"]],
+            ["Christen Unie", b["Christen Unie"]],
+            ["GROENLINKS", b["GROENLINKS"]],
+            ["SGP", b["SGP"]],
+            ["Partij voor de Dieren", b["Partij voor de Dieren"]],
+            ["50PLUS", b["50PLUS"]],
+            ["OndernemersPartij", b["OndernemersPartij"]],
+            ["VNL", b["VNL"]],
+            ["DENK", b["DENK"]],
+            ["NieuweWegen", b["NIEUWE WEGEN"]],
+            ["Forum voor Democratie", b["Forum voor Democratie"]],
+            ["De Burger Beweging", b["De Burger Beweging"]],
+            ["Vrijzinnige Partij", b["Vrijzinnige Partij"]],
+            ["GeenPeil", b["GeenPeil"]],
+            ["Piratenpartij", b["Piratenpartij"]],
+            ["Artikel 1", b["Artikel 1"]],
+            ["Niet Stemmers", b["Niet Stemmers"]],
+            ["Libertarische Partij", b["Libertarische Partij"]],
+            ["Lokaal in de Kamer", b["Lokaal in de Kamer"]],
+            ["Vrije Democratische Partij", b["Vrije Democratische Partij"]]
+        ];
+        arr.sort(sortFunction);
+        let newArr = arr.slice(0,14);
+        let stembureau = b.Stembureau,
+            stemmen = b.Stemmen;
+
+        let html = '<b>' + stembureau + '</b>' +
+            '<p>Aantal stemmen: ' + stemmen + '</p>' +
+            '<ul>';
+
+        for (let i = 0; i < newArr.length; i++) {
+            html += '<li>' + newArr[i][0] +': ' + newArr[i][1] + '</li>'
+        }
+
+        html += '</ul>';
+
+        return html;
+    }
+
+    map.on('baselayerchange', onBaseLayerChange);
+
+    function onBaseLayerChange(e) {
+        if (map.hasLayer(overlayMaps.opleidingsniveau)) {
+            currentLayer = e.name;
+            legend.updateLegend(e.name);
+        } else if (map.hasLayer(overlayMaps["Aantal sociale huurwoningen"])) {
+            currentLayer = e.name;
+            legend.updateLegend(e.name);
+        } else if(map.hasLayer(overlayMaps["Aantal 65 plusser"])) {
+            currentLayer = e.name;
+            legend.updateLegend(e.name);
+        } else if (map.hasLayer(overlayMaps["Gemiddelde WOZ waarde (x1000 euro)"])) {
+            currentLayer = e.name;
+            legend.updateLegend(e.name);
+        }
+        //legend.updateLegend(e.name);
+    }
+
+    function init() {
+        overlayMaps.opleidingsniveau.addTo(map);
+        markers.addTo(map)
+        info.addTo(map);
+        legend.addTo(map);
+        L.control.layers(overlayMaps).addTo(map);
+        currentLayer = "opleidingsniveau";
+
+        // L.control.layers(baseMaps).addTo(map);
+    }
+    init();
+
+
+
+
+
+
+</script>
+</body>
+</html>
+
+
