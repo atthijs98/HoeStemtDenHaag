@@ -12,9 +12,7 @@
   <component name="ChangeListManager">
     <list default="true" id="22276221-9352-4d5a-82b9-8e6868436b41" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/stembureaus.js" beforeDir="false" afterPath="$PROJECT_DIR$/data/stembureaus.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/stylesheet.css" beforeDir="false" afterPath="$PROJECT_DIR$/stylesheet.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,6 +31,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="nodejs_package_manager_path" value="npm" />
     <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
@@ -49,7 +48,8 @@
       <workItem from="1618130800225" duration="47255000" />
       <workItem from="1618214911086" duration="21425000" />
       <workItem from="1618249056158" duration="3685000" />
-      <workItem from="1618259593118" duration="4345000" />
+      <workItem from="1618259593118" duration="4419000" />
+      <workItem from="1618311629481" duration="5933000" />
     </task>
     <servers />
   </component>

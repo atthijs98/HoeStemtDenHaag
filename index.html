@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.3.0/dist/MarkerCluster.Default.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.3.0/dist/leaflet.markercluster.js"></script>
+    <script src="imports/jquery-3.6.0.min.js"></script>
     <script src="data/stembureaus.js"></script>
     <script src="data/woz.js"></script>
     <script src="data/opleidingsniveau.js"></script>
@@ -34,22 +35,31 @@
         <small>Filter Opties</small>
         <div class="divider"></div>
         <div id="layercontrol">
-            <label class="option" for="opleiding">Opleidingsniveau
-                <input type="radio" id="opleiding" name="map" value="opleiding">
+            <label class="option" for="all">Alle partijen
+                <input type="radio" id="all" name="party" value="all" checked>
                 <span class="checkmark"></span>
             </label>
-            <label class="option" for="woz">Gemiddelde WOZ waarde (x1000 euro)
-                <input type="radio" id="woz" name="map" value="woz">
+            <label class="option" for="vvd">VVD
+                <input type="radio" id="vvd" name="party" value="vvd">
                 <span class="checkmark"></span>
             </label>
-            <label class="option" for="plus">Aantal 65-plussers
-                <input type="radio" id="plus" name="map" value="plus">
+            <label class="option" for="pvv">PVV
+                <input type="radio" id="pvv" name="party" value="pvv">
                 <span class="checkmark"></span>
             </label>
-            <label class="option" for="huur">Aantal sociale huurwoningen
-                <input type="radio" id="huur" name="map" value="huur">
+            <label class="option" for="d66">D66
+                <input type="radio" id="d66" name="party" value="d66">
                 <span class="checkmark"></span>
             </label>
+            <label class="option" for="gl">GroenLinks
+                <input type="radio" id="gl" name="party" value="gl">
+                <span class="checkmark"></span>
+            </label>
+            <label class="option" for="denk">DENK
+                <input type="radio" id="denk" name="party" value="denk">
+                <span class="checkmark"></span>
+            </label>
+
         </div>
     </div>
     <main>
@@ -62,6 +72,13 @@
             popupAnchor: [-3, -76]
         }
     });
+
+    let vvdIds = [];
+    let d66Ids = [];
+    let glIds = [];
+    let pvvIds = [];
+    let denkIds = [];
+    let markerids = [];
 
     let vvdIcon = new LeafletIcon({iconUrl: 'images/vvd_logo.png', iconSize: [28,28]}),
         pvdaIcon = new LeafletIcon({iconUrl: 'images/pvda_logo.png', iconSize: [35,35]}),
@@ -148,23 +165,29 @@
     const markers = L.markerClusterGroup();
     const pollingStations = L.geoJson(Bureaus, {
         onEachFeature: function (feature, layer) {
+            let laag = L.stamp(layer);
             let properties = feature.properties;
             const html = createHTML(properties);
             let party = largestParty(properties);
             if (party === "vvd") {
-                console.log("name: " +  properties.Stembureau + " latitude: " + properties.Latitude + " Longitude: " + properties.Longitude);
+                vvdIds.push(layer['_leaflet_id']);
                 layer.setIcon(vvdIcon);
             } else if(party === "pvv") {
+                pvvIds.push(layer['_leaflet_id']);
                 layer.setIcon(pvvIcon);
             } else if(party === "pvda") {
                 layer.setIcon(pvdaIcon);
             } else if(party === "d66") {
+                d66Ids.push(layer['_leaflet_id']);
                 layer.setIcon(d66Icon);
             } else if(party === "groenlinks") {
+                glIds.push(layer['_leaflet_id']);
                 layer.setIcon(groenlinksIcon);
             } else if(party === "denk") {
+                denkIds.push(layer['_leaflet_id']);
                 layer.setIcon(denkIcon);
             }
+            markerids.push(layer);
             layer.bindPopup(html);
         }
     });
@@ -172,7 +195,6 @@
 
     const legend = L.control({position: 'bottomright'})
     legend.onAdd = function (map) {
-        console.log(map);
         this._el = L.DomUtil.create('div', 'info legend');
         this.updateLegend();
         return this._el;
@@ -558,6 +580,41 @@
     }
     init();
 
+    $('input[name=party]').click(function () {
+        resetParties();
+        const party = this.value;
+        for (let i = 0; i < markerids.length; i++) {
+            if (party === "vvd"){
+                if(!vvdIds.includes(markerids[i]._leaflet_id)) {
+                    markers.removeLayer(markerids[i]);
+                }
+            } else if (party === "pvv") {
+                if(!pvvIds.includes(markerids[i]._leaflet_id)) {
+                    markers.removeLayer(markerids[i]);
+                }
+            } else if (party === "d66") {
+                if(!d66Ids.includes(markerids[i]._leaflet_id)) {
+                    markers.removeLayer(markerids[i]);
+                }
+            } else if (party === "gl") {
+                if(!glIds.includes(markerids[i]._leaflet_id)) {
+                    markers.removeLayer(markerids[i]);
+                }
+            } else if (party === "denk") {
+                if(!denkIds.includes(markerids[i]._leaflet_id)) {
+                    markers.removeLayer(markerids[i]);
+                }
+            } else {
+                resetParties();
+            }
+        }
+    });
+
+    function resetParties() {
+        for (let i = 0; i < markerids.length; i++) {
+            markers.addLayer(markerids[i]);
+        }
+    }
 
 
 
