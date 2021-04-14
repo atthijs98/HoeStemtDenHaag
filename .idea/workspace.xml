@@ -12,15 +12,7 @@
   <component name="ChangeListManager">
     <list default="true" id="22276221-9352-4d5a-82b9-8e6868436b41" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/sociaal_eco.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/pvda_logo.png" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/materialize/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/materialize/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/materialize/css/materialize.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/materialize/css/materialize.min.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/materialize/js/materialize.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/materialize/js/materialize.min.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,7 +50,7 @@
       <workItem from="1618249056158" duration="3685000" />
       <workItem from="1618259593118" duration="4419000" />
       <workItem from="1618311629481" duration="6960000" />
-      <workItem from="1618399058295" duration="1067000" />
+      <workItem from="1618399058295" duration="3579000" />
     </task>
     <servers />
   </component>

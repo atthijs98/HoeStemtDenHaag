@@ -283,17 +283,7 @@
             ["DENK", feature["DENK"]],
             ];
         arr.sort(sortFunction);
-        if (arr[0][0] === "VVD") {
-            return "vvd";
-        } else if(arr[0][0] === "PVV") {
-            return "pvv";
-        } else if(arr[0][0] === "D66") {
-            return "d66";
-        } else if(arr[0][0] === "GROENLINKS") {
-            return "groenlinks";
-        } else if(arr[0][0] === "DENK") {
-            return "denk";
-        }
+        return arr[0][0].toLowerCase();
     }
 
     function getColor(d) {
