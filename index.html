@@ -59,7 +59,6 @@
                 <input type="radio" id="denk" name="party" value="denk">
                 <span class="checkmark"></span>
             </label>
-
         </div>
     </div>
     <main>
@@ -81,7 +80,6 @@
     let markerids = [];
 
     let vvdIcon = new LeafletIcon({iconUrl: 'images/vvd_logo.png', iconSize: [28,28]}),
-        pvdaIcon = new LeafletIcon({iconUrl: 'images/pvda_logo.png', iconSize: [35,35]}),
         pvvIcon = new LeafletIcon({iconUrl: 'images/pvv_logo.png', iconSize: [35,35]}),
         denkIcon = new LeafletIcon({iconUrl: 'images/denk_logo.png',iconSize: [50,50]}),
         d66Icon = new LeafletIcon({iconUrl: 'images/d66_logo.png', iconSize: [35,30]}),
@@ -175,8 +173,6 @@
             } else if(party === "pvv") {
                 pvvIds.push(layer['_leaflet_id']);
                 layer.setIcon(pvvIcon);
-            } else if(party === "pvda") {
-                layer.setIcon(pvdaIcon);
             } else if(party === "d66") {
                 d66Ids.push(layer['_leaflet_id']);
                 layer.setIcon(d66Icon);
@@ -281,7 +277,6 @@
     function largestParty(feature) {
         let arr = [
             ["VVD", feature["VVD"]],
-            ["PVDA", feature["P.v.d.A."]],
             ["PVV", feature["PVV"]],
             ["D66", feature["D66"]],
             ["GROENLINKS", feature["GROENLINKS"]],
@@ -292,8 +287,6 @@
             return "vvd";
         } else if(arr[0][0] === "PVV") {
             return "pvv";
-        } else if(arr[0][0] === "PVDA") {
-            return "pvda";
         } else if(arr[0][0] === "D66") {
             return "d66";
         } else if(arr[0][0] === "GROENLINKS") {
