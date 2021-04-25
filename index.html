@@ -131,6 +131,7 @@
     let info = L.control();
     info.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'info');
+        this._div.setAttribute('id', 'title-card');
         this.update();
         return this._div
     };
