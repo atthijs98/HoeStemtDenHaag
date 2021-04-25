@@ -2,9 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <link rel="stylesheet" href="stylesheet.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.3.0/dist/MarkerCluster.css" />
@@ -22,10 +20,11 @@
 <body>
 <header>
     <nav>
+        <span style="font-size:30px;cursor:pointer" onclick="toggleNav()">&#9776;</span>
         <h2>Hoe stemt Den Haag?</h2>
     </nav>
 </header>
-    <div class="sidenav">
+    <div class="sidenav" id="mySidenav">
         <a>
             <figure>
                 <img src="images/downloaden.png" alt="logo">
@@ -209,7 +208,7 @@
                     grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
             }
         } else {
-            if (name === "opleidingsniveau") {
+            if (name === "Opleidingsniveau") {
                 let grades = [7, 15, 25, 30, 40, 48, 55, 63, 71],
                     labels = [];
 
@@ -268,7 +267,7 @@
     };
 
     const overlayMaps = {
-        "opleidingsniveau": opleidingsniveau,
+        "Opleidingsniveau": opleidingsniveau,
         "Gemiddelde WOZ waarde (x1000 euro)": woz,
         "Aantal 65 plusser": oud,
         "Aantal sociale huurwoningen": huur
@@ -364,7 +363,7 @@
                 }
             }
         } else {
-            if (currentLayer === "opleidingsniveau") {
+            if (currentLayer === "Opleidingsniveau") {
                 let v = parseInt(d.hoog);
                 if (v > 5 && v < 15.325) {
                     return '#f7fbff';
@@ -535,7 +534,7 @@
     map.on('baselayerchange', onBaseLayerChange);
 
     function onBaseLayerChange(e) {
-        if (map.hasLayer(overlayMaps.opleidingsniveau)) {
+        if (map.hasLayer(overlayMaps["Opleidingsniveau"])) {
             currentLayer = e.name;
             legend.updateLegend(e.name);
         } else if (map.hasLayer(overlayMaps["Aantal sociale huurwoningen"])) {
@@ -552,16 +551,19 @@
     }
 
     function init() {
-        overlayMaps.opleidingsniveau.addTo(map);
+        overlayMaps["Opleidingsniveau"].addTo(map);
         markers.addTo(map)
         info.addTo(map);
         legend.addTo(map);
         L.control.layers(overlayMaps).addTo(map);
-        currentLayer = "opleidingsniveau";
+        currentLayer = "Opleidingsniveau";
 
         // L.control.layers(baseMaps).addTo(map);
     }
     init();
+
+    // $(window).on("resize", function () { $("#map").height($(window).height() -220); map.invalidateSize(); }).trigger("resize");
+
 
     $('input[name=party]').click(function () {
         resetParties();
@@ -598,11 +600,23 @@
             markers.addLayer(markerids[i]);
         }
     }
+</script>
+<script>
+    function toggleNav() {
+        let nav =  document.getElementById("mySidenav");
+        if (nav.style.marginLeft === "0px"){
+            closeNav();
+        } else {
+            openNav();
+        }
+    }
+    function openNav() {
+        document.getElementById("mySidenav").style.marginLeft = "0px";
+    }
 
-
-
-
-
+    function closeNav() {
+        document.getElementById("mySidenav").style.marginLeft = "-270px";
+    }
 </script>
 </body>
 </html>

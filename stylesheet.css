@@ -9,6 +9,11 @@ body {
     font-size: 14px;
 }
 
+html, body, #map {
+    height: 100%;
+    width: 100%;
+}
+
 h1 {
     font-size: 210%;
     font-weight: 400;
@@ -32,11 +37,15 @@ nav {
     box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14), 0 3px 1px -2px rgba(0,0,0,0.12), 0 1px 5px 0 rgba(0,0,0,0.20);
 }
 
+nav span {
+    display: none;
+}
+
 img {
     width: 80%;
 }
+
 #map {
-    height: 663px;
     z-index: 1;
 }
 .info {
@@ -99,6 +108,7 @@ div.divider {
 main {
     margin-left: 270px; /* Same as the width of the sidenav */
     font-size: 28px; /* Increased text to enable scrolling */
+    height: calc(100% - 60px);
 }
 
 @media screen and (max-height: 450px) {
@@ -176,7 +186,24 @@ label.option .checkmark:after {
 }
 
 
-
+@media screen and (max-width: 600px) {
+    .sidenav {
+        margin-left: -270px;
+    }
+    main {
+        margin-left: 0;
+    }
+    nav {
+        text-align: left;
+    }
+    nav span {
+        display: inline-block;
+        padding-right: 16px;
+    }
+    nav h2 {
+        display: inline-block;
+    }
+}
 
 
 
