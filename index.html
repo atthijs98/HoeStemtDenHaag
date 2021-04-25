@@ -209,7 +209,7 @@
                     grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
             }
         } else {
-            if (name === "Opleidingsniveau") {
+            if (name === "Percentage hoogopgeleiden") {
                 let grades = [7, 15, 25, 30, 40, 48, 55, 63, 71],
                     labels = [];
 
@@ -268,7 +268,7 @@
     };
 
     const overlayMaps = {
-        "Opleidingsniveau": opleidingsniveau,
+        "Percentage hoogopgeleiden": opleidingsniveau,
         "Gemiddelde WOZ waarde (x1000 euro)": woz,
         "Aantal 65 plusser": oud,
         "Aantal sociale huurwoningen": huur
@@ -364,7 +364,7 @@
                 }
             }
         } else {
-            if (currentLayer === "Opleidingsniveau") {
+            if (currentLayer === "Percentage hoogopgeleiden") {
                 let v = parseInt(d.hoog);
                 if (v > 5 && v < 15.325) {
                     return '#f7fbff';
@@ -535,7 +535,7 @@
     map.on('baselayerchange', onBaseLayerChange);
 
     function onBaseLayerChange(e) {
-        if (map.hasLayer(overlayMaps["Opleidingsniveau"])) {
+        if (map.hasLayer(overlayMaps["Percentage hoogopgeleiden"])) {
             currentLayer = e.name;
             legend.updateLegend(e.name);
         } else if (map.hasLayer(overlayMaps["Aantal sociale huurwoningen"])) {
@@ -552,12 +552,12 @@
     }
 
     function init() {
-        overlayMaps["Opleidingsniveau"].addTo(map);
+        overlayMaps["Percentage hoogopgeleiden"].addTo(map);
         markers.addTo(map)
         info.addTo(map);
         legend.addTo(map);
         L.control.layers(overlayMaps).addTo(map);
-        currentLayer = "Opleidingsniveau";
+        currentLayer = "Percentage hoogopgeleiden";
 
         // L.control.layers(baseMaps).addTo(map);
     }
