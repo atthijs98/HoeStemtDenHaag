@@ -15,6 +15,7 @@
     <script src="data/opleidingsniveau.js"></script>
     <script src="data/65plus.js"></script>
     <script src="data/huurwoning.js"></script>
+    <script src="data/nw_all.js"></script>
     <title>Hoe Stemt Den Haag?</title>
 </head>
 <body>
@@ -128,6 +129,17 @@
         }
     });
 
+    const all = L.geoJson(All, {
+        style: style,
+        onEachFeature: function (feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: zoomToFeature
+            });
+        }
+    })
+
     let info = L.control();
     info.onAdd = function (map) {
         this._div = L.DomUtil.create('div', 'info');
@@ -142,11 +154,11 @@
                 : 'Hover over een wijk');
         }else if (props.hasOwnProperty("hoog")){
             this._div.innerHTML = '<h4>Percentage hoog opleidingsniveau</h4>' +  (props ?
-                '<b>' + props.WIJKNAAM + '</b><br />' + props.hoog + ' %'
+                '<b>' + props.WIJKNAAM + '</b><br />' + Math.round(props.hoog * 100) / 100 + ' %'
                 : 'Hover over een wijk');
         } else if(props.hasOwnProperty("P_SOCIAAL")) {
             this._div.innerHTML = '<h4>Percentage sociale huurwoningen</h4>' +  (props ?
-                '<b>' + props.WIJKNAAM + '</b><br />' + props.P_SOCIAAL + ' %'
+                '<b>' + props.WIJKNAAM + '</b><br />' + Math.round(props.P_SOCIAAL * 100) / 100 + ' %'
                 : 'Hover over een wijk');
         } else if (props.hasOwnProperty("A_65_PLUS")) {
             this._div.innerHTML = '<h4>Aantal 65 plussers</h4>' +  (props ?
@@ -155,6 +167,10 @@
         } else if (props.hasOwnProperty("G_WOZ")) {
             this._div.innerHTML = '<h4>Gemiddelde WOZ-waarde (x 1000)</h4>' +  (props ?
                 '<b>' + props.WIJKNAAM + '</b><br />' + props.G_WOZ + ''
+                : 'Hover over een wijk');
+        } else if (props.hasOwnProperty("P_NW_ALL")) {
+            this._div.innerHTML = '<h4>Percentage niet-westerse allochtonen</h4>' +  (props ?
+                '<b>' + props.WIJKNAAM + '</b><br />' + Math.round(props.P_NW_ALL * 100) / 100 + ' %'
                 : 'Hover over een wijk');
         }
     }
@@ -249,6 +265,16 @@
                         '<i style="background:' + getColor(d) + '"></i> ' +
                         grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
                 }
+            } else if (name === "Percentage niet-westerse allochtonen") {
+                let grades = [0, 10, 21, 31, 41, 52, 62, 72, 84],
+                    labels = [];
+
+                for (let i = 0; i < grades.length-1; i++) {
+                    let d = {"P_NW_ALL": grades[i] + 1};
+                    this._el.innerHTML +=
+                        '<i style="background:' + getColor(d) + '"></i> ' +
+                        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+                }
             }
         }
     }
@@ -271,7 +297,8 @@
         "Percentage hoogopgeleiden": opleidingsniveau,
         "Gemiddelde WOZ waarde (x1000 euro)": woz,
         "Aantal 65 plusser": oud,
-        "Aantal sociale huurwoningen": huur
+        "Aantal sociale huurwoningen": huur,
+        "Percentage niet-westerse allochtonen": all
     }
 
     function largestParty(feature) {
@@ -362,6 +389,27 @@
                 } else {
                     return 'transparent';
                 }
+            } else if (d.hasOwnProperty("P_NW_ALL")) {
+                let v = parseInt(d.P_NW_ALL);
+                if (v >= 0 && v < 10.33) {
+                    return '#fff5f0';
+                } else if (v >= 10.33 && v < 20.65) {
+                    return '#feddcd';
+                } else if (v >= 20.65 && v < 30.98) {
+                    return '#fcb398';
+                } else if (v >= 30.98 && v < 41.31) {
+                    return '#fc8666';
+                } else if (v >= 41.31 && v < 51.63) {
+                    return '#f7573e';
+                } else if (v >= 51.63 && v < 61.96) {
+                    return '#de2924';
+                } else if (v >= 61.96 && v < 72.29) {
+                    return '#b31217';
+                } else if (v >= 72.29 && v < 83){
+                    return '#67000d';
+                } else {
+                    return 'transparent';
+                }
             }
         } else {
             if (currentLayer === "Percentage hoogopgeleiden") {
@@ -436,9 +484,29 @@
                 } else {
                     return 'transparent';
                 }
-
+            } else if (currentLayer === "Percentage niet-westerse allochtonen") {
+                let v = parseInt(d.P_NW_ALL);
+                if (v >= 0 && v < 10.33) {
+                    return '#fff5f0';
+                } else if (v >= 10.33 && v < 20.65) {
+                    return '#feddcd';
+                } else if (v >= 20.65 && v < 30.98) {
+                    return '#fcb398';
+                } else if (v >= 30.98 && v < 41.31) {
+                    return '#fc8666';
+                } else if (v >= 41.31 && v < 51.63) {
+                    return '#f7573e';
+                } else if (v >= 51.63 && v < 61.96) {
+                    return '#de2924';
+                } else if (v >= 61.96 && v < 72.29) {
+                    return '#b31217';
+                } else if (v >= 72.29 && v < 83){
+                    return '#67000d';
+                } else {
+                    return 'transparent';
+                }
             }
-        }
+            }
 
     }
 
@@ -545,6 +613,9 @@
             currentLayer = e.name;
             legend.updateLegend(e.name);
         } else if (map.hasLayer(overlayMaps["Gemiddelde WOZ waarde (x1000 euro)"])) {
+            currentLayer = e.name;
+            legend.updateLegend(e.name);
+        } else if (map.hasLayer(overlayMaps["Percentage niet-westerse allochtonen"])) {
             currentLayer = e.name;
             legend.updateLegend(e.name);
         }
